@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: manakube
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: list-pods
+rules:
+- apiGroups: 
+    - ""
+  resources: 
+    - "pods"
+  verbs:
+    - "list"
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: list-pods
+subjects:
+- kind: ServiceAccount
+  name: manakube
+  namespace: default
+roleRef:
+  kind: ClusterRole
+  name: list-pods
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp
+  labels:
+    app: myapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: myapp
+  template:
+    metadata:
+      labels:
+        app: myapp
+    spec:
+      serviceAccountName: manakube
+      containers:
+      - name: alpine
+        image: alpine
+        command:
+          - sleep
+          - "3000"
+
